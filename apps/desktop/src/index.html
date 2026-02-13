@@ -2,19 +2,15 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PN Desktop - e-wall</title>
+  <title>PN Desktop</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    
     body {
-      font-family: "SF Mono", "Fira Code", "Cascadia Code", monospace;
+      font-family: "SF Mono", "Fira Code", monospace;
       background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
       color: #e8e8e8;
       min-height: 100vh;
-      overflow: hidden;
     }
-    
     .container {
       display: grid;
       grid-template-columns: 1fr 2fr;
@@ -23,7 +19,6 @@
       padding: 24px;
       height: 100vh;
     }
-    
     .header {
       grid-column: 1 / -1;
       display: flex;
@@ -34,7 +29,6 @@
       border-radius: 12px;
       border: 1px solid rgba(255,255,255,0.1);
     }
-    
     .logo {
       font-size: 24px;
       font-weight: bold;
@@ -42,100 +36,71 @@
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
-    
     .agent-status {
       display: flex;
       gap: 16px;
       font-size: 14px;
     }
-    
-    .status-item {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    
+    .status-item { display: flex; align-items: center; gap: 6px; }
     .status-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
+      width: 8px; height: 8px; border-radius: 50%;
       animation: pulse 2s infinite;
     }
-    
     .status-dot.active { background: #00ff88; }
     .status-dot.waiting { background: #ffaa00; }
     .status-dot.complete { background: #00d9ff; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    .no-cursor { color: #00ff88; font-weight: bold; }
     
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.5; }
-    }
-    
-    .weather-panel {
+    .sidebar {
       background: rgba(255,255,255,0.05);
       border-radius: 16px;
       border: 1px solid rgba(255,255,255,0.1);
-      padding: 24px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
+      padding: 20px;
     }
-    
+    .weather-panel { text-align: center; margin-bottom: 24px; }
     .temp-display {
-      font-size: 96px;
+      font-size: 72px;
       font-weight: 200;
-      line-height: 1;
       background: linear-gradient(180deg, #fff 0%, #88ccff 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
+    .condition { font-size: 18px; color: #88ccff; }
+    .location { font-size: 12px; color: #666; margin-top: 8px; }
     
-    .condition {
-      font-size: 24px;
-      color: #88ccff;
-      margin-top: 8px;
+    .quick-commands { margin-top: 24px; }
+    .quick-commands h3 { font-size: 12px; color: #666; margin-bottom: 12px; }
+    .cmd-btn {
+      display: block;
+      width: 100%;
+      padding: 10px 12px;
+      margin-bottom: 8px;
+      background: rgba(0,217,255,0.1);
+      border: 1px solid rgba(0,217,255,0.3);
+      border-radius: 8px;
+      color: #00d9ff;
+      text-align: left;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 13px;
     }
-    
-    .location {
-      font-size: 14px;
-      color: #666;
-      margin-top: 16px;
-    }
+    .cmd-btn:hover { background: rgba(0,217,255,0.2); }
     
     .main-display {
       background: rgba(0,0,0,0.3);
       border-radius: 16px;
       border: 1px solid rgba(255,255,255,0.1);
       padding: 20px;
-      font-family: monospace;
       font-size: 14px;
       overflow: auto;
     }
-    
-    .terminal-line {
-      padding: 2px 0;
-      opacity: 0;
-      animation: fadeIn 0.3s forwards;
-    }
-    
-    .terminal-line:nth-child(1) { animation-delay: 0.1s; }
-    .terminal-line:nth-child(2) { animation-delay: 0.2s; }
-    .terminal-line:nth-child(3) { animation-delay: 0.3s; }
-    .terminal-line:nth-child(4) { animation-delay: 0.4s; }
-    .terminal-line:nth-child(5) { animation-delay: 0.5s; }
-    .terminal-line:nth-child(6) { animation-delay: 0.6s; }
-    .terminal-line:nth-child(7) { animation-delay: 0.7s; }
-    .terminal-line:nth-child(8) { animation-delay: 0.8s; }
-    
-    @keyframes fadeIn {
-      to { opacity: 1; }
-    }
-    
+    .terminal-output { white-space: pre-wrap; }
     .prompt { color: #00ff88; }
     .cmd { color: #00d9ff; }
-    .output { color: #888; }
+    .output { color: #aaa; }
     .highlight { color: #ffaa00; }
+    .success { color: #00ff88; }
     
     .footer {
       grid-column: 1 / -1;
@@ -143,11 +108,6 @@
       font-size: 12px;
       color: #444;
       padding: 8px;
-    }
-    
-    .no-cursor {
-      color: #00ff88;
-      font-weight: bold;
     }
   </style>
 </head>
@@ -168,45 +128,97 @@
           <span class="status-dot complete"></span>
           <span id="complete-count">12</span> complete
         </div>
-        <div class="status-item no-cursor">
-          NO SPINNING CURSOR
-        </div>
+        <div class="status-item no-cursor">NO SPINNING CURSOR</div>
       </div>
     </header>
     
-    <section class="weather-panel">
-      <div class="temp-display" id="temp">42°</div>
-      <div class="condition" id="condition">Partly Cloudy</div>
-      <div class="location" id="location">Kitsap County, WA</div>
+    <section class="sidebar">
+      <div class="weather-panel">
+        <div class="temp-display" id="temp">42°</div>
+        <div class="condition" id="condition">Partly Cloudy</div>
+        <div class="location" id="location">Kitsap County, WA</div>
+      </div>
+      
+      <div class="quick-commands">
+        <h3>QUICK COMMANDS</h3>
+        <button class="cmd-btn" data-cmd="/status">📊 Status</button>
+        <button class="cmd-btn" data-cmd="/fn">💰 Finance</button>
+        <button class="cmd-btn" data-cmd="/agents">🤖 Agents</button>
+        <button class="cmd-btn" data-cmd="/demos">📈 Demos</button>
+        <button class="cmd-btn" data-cmd="/gate">🚦 Quality Gate</button>
+      </div>
     </section>
     
     <section class="main-display">
-      <div class="terminal-line"><span class="prompt">λ</span> <span class="cmd">pn agents status</span></div>
-      <div class="terminal-line"><span class="output">Agent swarm: 3 active, 12 completed today</span></div>
-      <div class="terminal-line"><span class="output">LLM calls: 47 parallel, 0 waiting</span></div>
-      <div class="terminal-line"><span class="output">Avg latency: 230ms (swarm) vs 4.2s (sequential)</span></div>
-      <div class="terminal-line"></div>
-      <div class="terminal-line"><span class="prompt">λ</span> <span class="cmd">pn weather forecast</span></div>
-      <div class="terminal-line"><span class="output">Fetching from OpenClaw weather skill...</span></div>
-      <div class="terminal-line"><span class="highlight">✓ Today: 42°F, Partly Cloudy</span></div>
-      <div class="terminal-line"><span class="highlight">✓ Tomorrow: 45°F, Rain likely</span></div>
+      <div id="terminal-output" class="terminal-output">
+<span class="prompt">λ</span> <span class="cmd">welcome</span>
+<span class="output">PN Desktop v0.0.1 ready</span>
+<span class="output">Use menu or click commands on left</span>
+<span class="output">Telegram: same commands work there too</span>
+<span class="highlight">
+Type /help or use Demos menu to start
+</span>
+      </div>
     </section>
     
     <footer class="footer">
-      Prompt Neurons Desktop v0.0.1 | Powered by OpenClaw + Agent Flywheel | 
+      PN Desktop v0.0.1 | OpenClaw + Agent Flywheel |
       <span class="no-cursor">"Tired of waiting? We shipped."</span>
     </footer>
   </div>
   
   <script>
-    // Initialize with PN bridge
-    document.addEventListener("DOMContentLoaded", async () => {
-      if (window.pn) {
-        const status = await window.pn.getAgentStatus();
-        document.getElementById("active-count").textContent = status.active;
-        document.getElementById("waiting-count").textContent = status.waiting;
-        document.getElementById("complete-count").textContent = status.complete;
+    const output = document.getElementById("terminal-output");
+    
+    function appendOutput(cmd, result) {
+      const line = document.createElement("div");
+      line.innerHTML = `\n<span class="prompt">λ</span> <span class="cmd">${cmd}</span>\n`;
+      
+      if (result.type === "status") {
+        line.innerHTML += `<span class="output">╔════════════════════════════╗
+║      MARKOV BLANKET        ║
+╠════════════════════════════╣
+║ Resources: ${result.data.resources}
+║ Quality: ${result.data.quality}
+║ Cost potential: ${result.data.cost}
+╚════════════════════════════╝</span>`;
+      } else if (result.type === "weather") {
+        line.innerHTML += `<span class="success">🌤️ ${result.data.temp}°F - ${result.data.condition}</span>
+<span class="output">   ${result.data.location}</span>`;
+      } else if (result.type === "agents") {
+        line.innerHTML += `<span class="success">🤖 Agent Swarm Status</span>
+<span class="output">   Active: ${result.data.active} | Waiting: ${result.data.waiting} | Complete: ${result.data.complete}</span>`;
+      } else if (result.type === "gate") {
+        line.innerHTML += `<span class="success">🚦 Quality Gate</span>
+<span class="output">   Pass: ${result.data.pass} | Warn: ${result.data.warn} | Fail: ${result.data.fail}</span>`;
+      } else if (result.type === "demos") {
+        line.innerHTML += `<span class="highlight">📈 Available Demos</span>
+<span class="output">   • /demos sql - SQL Audit walkthrough
+   • /demos costs - Cost-cutting review
+   • /demos onboard - New user onboarding</span>`;
+      } else if (result.type === "dashboard") {
+        line.innerHTML += `<span class="success">📊 ${result.aor.toUpperCase()} Dashboard</span>
+<span class="output">   ${JSON.stringify(result.data)}</span>`;
+      } else {
+        line.innerHTML += `<span class="output">${JSON.stringify(result)}</span>`;
       }
+      
+      output.appendChild(line);
+      output.scrollTop = output.scrollHeight;
+    }
+    
+    // Handle quick command buttons
+    document.querySelectorAll(".cmd-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const cmd = btn.dataset.cmd;
+        const result = window.pn.exec(cmd);
+        appendOutput(cmd, result);
+      });
+    });
+    
+    // Handle commands from menu
+    window.addEventListener("pn-command", (e) => {
+      appendOutput(e.detail.command, e.detail.result);
     });
   </script>
 </body>

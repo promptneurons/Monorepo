@@ -1,41 +1,46 @@
-const { app, BrowserWindow } = require('electron');
-const path = require('path');
+const { app, BrowserWindow, ipcMain } = require("electron");
+const path = require("path");
+const { createMenu } = require("./menu");
+
+let mainWindow;
 
 function createWindow() {
-  const mainWindow = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
-    title: 'PN Desktop - e-wall',
+    title: "PN Desktop",
     webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
+      preload: path.join(__dirname, "preload.js"),
       contextIsolation: true,
       nodeIntegration: false
     },
-    // Make it look gorgeous
-    titleBarStyle: 'hiddenInset',
-    backgroundColor: '#1a1a2e'
+    titleBarStyle: "hiddenInset",
+    backgroundColor: "#1a1a2e"
   });
 
-  mainWindow.loadFile(path.join(__dirname, 'index.html'));
+  mainWindow.loadFile(path.join(__dirname, "index.html"));
   
-  // Open DevTools in development
-  if (process.env.NODE_ENV === 'development') {
-    mainWindow.webContents.openDevTools();
-  }
+  // Create menu
+  createMenu(mainWindow);
+  
+  // Handle command execution from menu
+  ipcMain.on("command-result", (event, result) => {
+    console.log("Command result:", result);
+  });
 }
 
 app.whenReady().then(() => {
   createWindow();
   
-  app.on('activate', () => {
+  app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) {
       createWindow();
     }
   });
 });
 
-app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
+app.on("window-all-closed", () => {
+  if (process.platform !== "darwin") {
     app.quit();
   }
 });

@@ -1,0 +1,149 @@
+const { app, Menu, shell } = require("electron");
+
+function createMenu(mainWindow) {
+  const isMac = process.platform === "darwin";
+  
+  const template = [
+    // App menu (Mac only)
+    ...(isMac ? [{
+      label: app.name,
+      submenu: [
+        { role: "about" },
+        { type: "separator" },
+        { role: "quit" }
+      ]
+    }] : []),
+    
+    // AOR Menu
+    {
+      label: "AOR",
+      submenu: [
+        { 
+          label: "💰 Finance", 
+          accelerator: "CmdOrCtrl+1",
+          click: () => execCommand(mainWindow, "/fn")
+        },
+        { 
+          label: "👔 Leadership", 
+          accelerator: "CmdOrCtrl+2",
+          click: () => execCommand(mainWindow, "/ld")
+        },
+        { 
+          label: "⚙️ Infrastructure", 
+          accelerator: "CmdOrCtrl+3",
+          click: () => execCommand(mainWindow, "/sf")
+        },
+        { 
+          label: "📜 Governance", 
+          accelerator: "CmdOrCtrl+4",
+          click: () => execCommand(mainWindow, "/lg")
+        },
+        { type: "separator" },
+        { 
+          label: "📣 Marketing", 
+          click: () => execCommand(mainWindow, "/mk")
+        },
+        { 
+          label: "📋 Management", 
+          click: () => execCommand(mainWindow, "/mg")
+        },
+        { 
+          label: "🤝 Customer", 
+          click: () => execCommand(mainWindow, "/cf")
+        }
+      ]
+    },
+    
+    // View Menu
+    {
+      label: "View",
+      submenu: [
+        { 
+          label: "📊 Status", 
+          accelerator: "CmdOrCtrl+S",
+          click: () => execCommand(mainWindow, "/status")
+        },
+        { 
+          label: "🌤️ Weather", 
+          click: () => execCommand(mainWindow, "/weather")
+        },
+        { 
+          label: "🤖 Agents", 
+          click: () => execCommand(mainWindow, "/agents")
+        },
+        { 
+          label: "🚦 Quality Gate", 
+          click: () => execCommand(mainWindow, "/gate")
+        },
+        { type: "separator" },
+        { 
+          label: "📋 Decision Queue", 
+          click: () => execCommand(mainWindow, "/queue")
+        },
+        { type: "separator" },
+        { role: "toggleDevTools" },
+        { role: "reload" }
+      ]
+    },
+    
+    // Demos Menu
+    {
+      label: "Demos",
+      submenu: [
+        { 
+          label: "🔍 SQL Audit", 
+          click: () => execCommand(mainWindow, "/demos sql")
+        },
+        { 
+          label: "💰 Cost-Cutting", 
+          click: () => execCommand(mainWindow, "/demos costs")
+        },
+        { 
+          label: "👋 Onboarding", 
+          click: () => execCommand(mainWindow, "/demos onboard")
+        },
+        { type: "separator" },
+        { 
+          label: "📋 All Demos", 
+          accelerator: "CmdOrCtrl+D",
+          click: () => execCommand(mainWindow, "/demos")
+        }
+      ]
+    },
+    
+    // Help Menu
+    {
+      label: "Help",
+      submenu: [
+        { 
+          label: "📚 Commands", 
+          click: () => execCommand(mainWindow, "/help")
+        },
+        { 
+          label: "🦋 About Claudius", 
+          click: () => execCommand(mainWindow, "/help claudius")
+        },
+        { type: "separator" },
+        {
+          label: "📖 Documentation",
+          click: () => shell.openExternal("https://docs.openclaw.ai")
+        },
+        {
+          label: "💬 Telegram",
+          click: () => shell.openExternal("https://t.me/your_bot")
+        }
+      ]
+    }
+  ];
+  
+  const menu = Menu.buildFromTemplate(template);
+  Menu.setApplicationMenu(menu);
+}
+
+function execCommand(mainWindow, command) {
+  // Send command to renderer
+  mainWindow.webContents.send("exec-command", command);
+  console.log(`Executing: ${command}`);
+}
+
+module.exports = { createMenu };
