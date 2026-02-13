@@ -1,6 +1,6 @@
 {
   "name": "@pn/desktop",
-  "version": "26021.0.0.1",
+  "version": "26021.0.0.2",
   "description": "PN Desktop - Agentic AI workbench",
   "main": "src/main.js",
   "scripts": {
@@ -27,6 +27,7 @@
   "dependencies": {
     "@xterm/addon-fit": "^0.11.0",
     "@xterm/xterm": "^6.0.0",
+    "node-pty": "^1.1.0",
     "xterm": "^5.3.0",
     "xterm-addon-fit": "^0.8.0"
   }

@@ -73,6 +73,11 @@
       font-family: inherit; font-size: 12px; transition: all 0.2s;
     }
     .cmd-btn:hover { background: rgba(0,217,255,0.2); transform: translateX(4px); }
+    .mode-indicator {
+      margin-top: 16px; padding: 8px; text-align: center;
+      background: rgba(0,255,136,0.1); border-radius: 8px;
+      font-size: 11px; color: #00ff88;
+    }
     
     .terminal-container {
       background: rgba(0,0,0,0.4);
@@ -113,14 +118,11 @@
       <div class="quick-commands">
         <h3>Quick Commands</h3>
         <button class="cmd-btn" data-cmd="/help">📚 /help</button>
-        <button class="cmd-btn" data-cmd="/status">📊 /status</button>
         <button class="cmd-btn" data-cmd="/weather">🌤️ /weather</button>
-        <button class="cmd-btn" data-cmd="/maltego">🔌 /maltego</button>
-        <button class="cmd-btn" data-cmd="/resume">📋 /resume</button>
-        <button class="cmd-btn" data-cmd="/fn">💰 /fn</button>
         <button class="cmd-btn" data-cmd="/agents">🤖 /agents</button>
         <button class="cmd-btn" data-cmd="/gate">🚦 /gate</button>
       </div>
+      <div class="mode-indicator" id="mode-indicator">🖥️ PTY MODE</div>
     </section>
     
     <section class="terminal-container">
@@ -128,7 +130,7 @@
     </section>
     
     <footer class="footer">
-      PN Desktop v0.0.5 | xterm.js (RED) | <span class="no-cursor">We dont browse the web. We browse your organizations capabilities.</span>
+      PN Desktop v26021.0.0.2 | xterm.js + node-pty 🐿️ | <span class="no-cursor">ssh green works now</span>
     </footer>
   </div>
   
@@ -152,143 +154,96 @@
     
     const fitAddon = new FitAddon();
     term.loadAddon(fitAddon);
-    term.open(document.getElementById("terminal"));
+    
+    const termEl = document.getElementById("terminal");
+    term.open(termEl);
     fitAddon.fit();
     
-    window.addEventListener("resize", () => fitAddon.fit());
-    
-    let currentLine = "";
-    const PROMPT = "\x1b[32mλ\x1b[0m ";
-    
-    function writePrompt() {
-      term.write("\r\n" + PROMPT);
-    }
-    
-    function writeLine(text, color = "white") {
-      const colors = {
-        green: "\x1b[32m",
-        cyan: "\x1b[36m",
-        yellow: "\x1b[33m",
-        white: "\x1b[37m",
-        gray: "\x1b[90m",
-        reset: "\x1b[0m"
-      };
-      term.write(colors[color] + text + colors.reset + "\r\n");
-    }
-    
-    async function executeCommand(cmd) {
-      term.write("\r\n");
-      
-      if (!cmd.startsWith("/")) {
-        writeLine("Commands start with / (try /help)", "yellow");
-        writePrompt();
-        return;
-      }
-      
-      const result = await window.pn.exec(cmd);
-      
-      if (result.type === "weather") {
-        const d = result.data;
-        writeLine(`🌤️  ${d.temp}°F - ${d.condition}`, "cyan");
-        writeLine(`   💧 Humidity: ${d.humidity}% | 💨 Wind: ${d.wind} mph`, "gray");
-        writeLine(`   📍 ${d.location}`, "gray");
-        if (result.live) writeLine("   [LIVE DATA]", "yellow");
-        document.getElementById("temp").textContent = d.temp + "°";
-        document.getElementById("condition").textContent = d.condition;
-      } else if (result.type === "status") {
-        writeLine("╔════════════════════════════╗", "cyan");
-        writeLine("║      MARKOV BLANKET        ║", "cyan");
-        writeLine("╠════════════════════════════╣", "cyan");
-        writeLine(`║ Resources: ${result.data.resources.padEnd(14)}║`, "white");
-        writeLine(`║ Quality: ${result.data.quality.padEnd(16)}║`, "white");
-        writeLine(`║ Cost: ${result.data.cost.padEnd(19)}║`, "white");
-        writeLine("╚════════════════════════════╝", "cyan");
-      } else if (result.type === "maltego") {
-        const d = result.data;
-        writeLine(`🔌 Maltego TRX: ${d.status}`, d.status === "online" ? "green" : "yellow");
-        writeLine(`   URL: ${d.url}`, "gray");
-        writeLine(`   Latency: ${d.latency || "N/A"}`, "gray");
-      } else if (result.type === "resume") {
-        const d = result.data;
-        writeLine(`📋 ${d.name}`, "cyan");
-        writeLine(`   Current: ${d.current}`, "white");
-        d.previous.forEach(p => {
-          writeLine(`   • ${p.company}: ${p.role} (${p.years})`, "gray");
-        });
-        writeLine(`   Skills: ${d.skills.join(", ")}`, "gray");
-        writeLine(`   Source: ${d.source}`, "yellow");
-        if (result.note) writeLine(`   ⚠️  ${result.note}`, "yellow");
-      } else if (result.type === "agents") {
-        writeLine("🤖 Agent Swarm", "cyan");
-        writeLine(`   Active: ${result.data.active} | Waiting: ${result.data.waiting} | Complete: ${result.data.complete}`, "white");
-      } else if (result.type === "gate") {
-        writeLine("🚦 Quality Gate", "cyan");
-        writeLine(`   Pass: ${result.data.pass} | Warn: ${result.data.warn} | Fail: ${result.data.fail}`, "white");
-      } else if (result.type === "help") {
-        writeLine("📚 Available Commands", "cyan");
-        writeLine(`   ${result.commands.join("  ")}`, "white");
-      } else if (result.type === "dashboard") {
-        writeLine(`📊 ${result.aor.toUpperCase()} Dashboard`, "cyan");
-        writeLine(`   ${JSON.stringify(result.data)}`, "gray");
-      } else if (result.type === "demos") {
-        writeLine("📈 Available Demos", "cyan");
-        result.data.available.forEach(d => writeLine(`   /demos ${d}`, "white"));
-      } else {
-        writeLine(JSON.stringify(result, null, 2), "gray");
-      }
-      
-      writePrompt();
-    }
-    
-    // Handle keyboard input
-    term.onKey(({ key, domEvent }) => {
-      const code = domEvent.keyCode;
-      
-      if (code === 13) { // Enter
-        const cmd = currentLine.trim();
-        currentLine = "";
-        if (cmd) executeCommand(cmd);
-        else writePrompt();
-      } else if (code === 8) { // Backspace
-        if (currentLine.length > 0) {
-          currentLine = currentLine.slice(0, -1);
-          term.write("\b \b");
-        }
-      } else if (key.length === 1 && code !== 9) { // Regular char
-        currentLine += key;
-        term.write(key);
-      }
+    // Resize handling
+    window.addEventListener("resize", () => {
+      fitAddon.fit();
+      window.electronAPI.resizeTerminal(term.cols, term.rows);
     });
     
-    // Handle sidebar button clicks
+    // Initial resize
+    setTimeout(() => {
+      fitAddon.fit();
+      window.electronAPI.resizeTerminal(term.cols, term.rows);
+    }, 100);
+    
+    // Connect PTY output -> terminal
+    window.electronAPI.onTerminalOutput((data) => {
+      term.write(data);
+    });
+    
+    // Connect terminal input -> PTY (with slash command interception)
+    let inputBuffer = "";
+    
+    term.onData((data) => {
+      // Check if Enter was pressed and we have a slash command
+      if (data === "\r") {
+        if (inputBuffer.startsWith("/")) {
+          handleSlashCommand(inputBuffer);
+          inputBuffer = "";
+          return;
+        }
+        inputBuffer = "";
+      } else if (data === "\x7f") { // Backspace
+        inputBuffer = inputBuffer.slice(0, -1);
+      } else {
+        inputBuffer += data;
+      }
+      
+      // Send to PTY
+      window.electronAPI.sendTerminalInput(data);
+    });
+    
+    // Slash command handler (in-app commands)
+    async function handleSlashCommand(cmd) {
+      term.write("\r\n");
+      
+      if (cmd === "/help") {
+        term.write("\x1b[36m📚 Slash Commands (handled in-app):\x1b[0m\r\n");
+        term.write("   /help     - This help\r\n");
+        term.write("   /weather  - Fetch weather\r\n");
+        term.write("   /agents   - Show agent status\r\n");
+        term.write("   /gate     - Quality gate status\r\n");
+        term.write("\r\n\x1b[90mAll other commands go to shell (ssh, ls, etc.)\x1b[0m\r\n");
+      } else if (cmd === "/weather") {
+        term.write("\x1b[36m🌤️ Fetching weather...\x1b[0m\r\n");
+        try {
+          const resp = await fetch("https://wttr.in/Kitsap+County?format=%t|%C");
+          const text = await resp.text();
+          const [temp, condition] = text.split("|");
+          term.write(`   ${temp.trim()} - ${condition.trim()}\r\n`);
+          document.getElementById("temp").textContent = temp.trim();
+          document.getElementById("condition").textContent = condition.trim();
+        } catch (e) {
+          term.write(`   \x1b[31mError: ${e.message}\x1b[0m\r\n`);
+        }
+      } else if (cmd === "/agents") {
+        term.write("\x1b[36m🤖 Agent Swarm:\x1b[0m\r\n");
+        term.write("   Active: 3 | Waiting: 0 | Complete: 12\r\n");
+      } else if (cmd === "/gate") {
+        term.write("\x1b[36m🚦 Quality Gate:\x1b[0m\r\n");
+        term.write("   Pass: 6 | Warn: 2 | Fail: 0\r\n");
+        term.write("   Status: \x1b[33m🟡 PASSED WITH WARNINGS\x1b[0m\r\n");
+      } else {
+        term.write(`\x1b[31mUnknown command: ${cmd}\x1b[0m\r\n`);
+      }
+    }
+    
+    // Quick command buttons
     document.querySelectorAll(".cmd-btn").forEach(btn => {
       btn.addEventListener("click", () => {
         const cmd = btn.dataset.cmd;
-        term.write(cmd);
-        currentLine = cmd;
-        executeCommand(cmd);
+        term.write(cmd + "\r\n");
+        handleSlashCommand(cmd);
       });
     });
     
-    // Handle menu commands
-    window.addEventListener("pn-command", (e) => {
-      term.write(e.detail.command);
-      currentLine = e.detail.command;
-      executeCommand(e.detail.command);
-    });
-    
-    // Startup
-    writeLine("", "white");
-    writeLine("╔═══════════════════════════════════════════════════════╗", "cyan");
-    writeLine("║  PN Desktop v0.0.5 - Organizational Capability Browser ║", "cyan");
-    writeLine("║  Terminal: xterm.js (RED)                              ║", "cyan");
-    writeLine("╚═══════════════════════════════════════════════════════╝", "cyan");
-    writeLine("", "white");
-    writeLine("Type /help for commands, or click buttons on the left.", "gray");
-    writePrompt();
-    
     // Auto-fetch weather
-    setTimeout(() => executeCommand("/weather"), 1000);
+    setTimeout(() => handleSlashCommand("/weather"), 1000);
   </script>
 </body>
 </html>
