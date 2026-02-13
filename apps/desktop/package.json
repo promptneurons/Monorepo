@@ -1,6 +1,6 @@
 {
   "name": "@pn/desktop",
-  "version": "26021.0.0.2",
+  "version": "26021.0.0.3",
   "description": "PN Desktop - Agentic AI workbench",
   "main": "src/main.js",
   "scripts": {

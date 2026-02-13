@@ -2,7 +2,7 @@ const { app, Menu, shell } = require("electron");
 const { helpLinks, VIRTUOSO_BASE } = require("./help");
 
 const GITHUB_ORG = "https://github.com/promptneurons";
-const BLOG_CLAUDIUS = "https://kitsaplabs.com/blog/author/claudius/";
+const BLOG_CLAUDIUS = "https://kitsaplabs.com/blog/index.php/author/claudius/";
 
 function createMenu(mainWindow) {
   const isMac = process.platform === "darwin";
