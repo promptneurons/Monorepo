@@ -1,0 +1,12 @@
+{
+  "name": "promptneurons-monorepo",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Prompt Neurons Monorepo - PN Desktop and packages",
+  "scripts": {
+    "desktop": "pnpm --filter @pn/desktop"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
