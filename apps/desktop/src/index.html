@@ -14,7 +14,7 @@
     .container {
       display: grid;
       grid-template-columns: 1fr 2fr;
-      grid-template-rows: auto 1fr auto;
+      grid-template-rows: auto 1fr auto auto;
       gap: 16px;
       padding: 24px;
       height: 100vh;
@@ -36,16 +36,9 @@
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
-    .agent-status {
-      display: flex;
-      gap: 16px;
-      font-size: 14px;
-    }
+    .agent-status { display: flex; gap: 16px; font-size: 14px; }
     .status-item { display: flex; align-items: center; gap: 6px; }
-    .status-dot {
-      width: 8px; height: 8px; border-radius: 50%;
-      animation: pulse 2s infinite;
-    }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; animation: pulse 2s infinite; }
     .status-dot.active { background: #00ff88; }
     .status-dot.waiting { background: #ffaa00; }
     .status-dot.complete { background: #00d9ff; }
@@ -72,18 +65,10 @@
     .quick-commands { margin-top: 24px; }
     .quick-commands h3 { font-size: 12px; color: #666; margin-bottom: 12px; }
     .cmd-btn {
-      display: block;
-      width: 100%;
-      padding: 10px 12px;
-      margin-bottom: 8px;
-      background: rgba(0,217,255,0.1);
-      border: 1px solid rgba(0,217,255,0.3);
-      border-radius: 8px;
-      color: #00d9ff;
-      text-align: left;
-      cursor: pointer;
-      font-family: inherit;
-      font-size: 13px;
+      display: block; width: 100%; padding: 10px 12px; margin-bottom: 8px;
+      background: rgba(0,217,255,0.1); border: 1px solid rgba(0,217,255,0.3);
+      border-radius: 8px; color: #00d9ff; text-align: left; cursor: pointer;
+      font-family: inherit; font-size: 13px;
     }
     .cmd-btn:hover { background: rgba(0,217,255,0.2); }
     
@@ -102,6 +87,31 @@
     .highlight { color: #ffaa00; }
     .success { color: #00ff88; }
     
+    .input-row {
+      grid-column: 1 / -1;
+      display: flex;
+      gap: 12px;
+      background: rgba(0,0,0,0.3);
+      border-radius: 12px;
+      padding: 12px 16px;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .input-prompt {
+      color: #00ff88;
+      font-size: 16px;
+      line-height: 32px;
+    }
+    #command-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: #00d9ff;
+      font-family: inherit;
+      font-size: 16px;
+      outline: none;
+    }
+    #command-input::placeholder { color: #444; }
+    
     .footer {
       grid-column: 1 / -1;
       text-align: center;
@@ -116,63 +126,56 @@
     <header class="header">
       <div class="logo">⚡ PN Desktop</div>
       <div class="agent-status">
-        <div class="status-item">
-          <span class="status-dot active"></span>
-          <span id="active-count">3</span> active
-        </div>
-        <div class="status-item">
-          <span class="status-dot waiting"></span>
-          <span id="waiting-count">0</span> waiting
-        </div>
-        <div class="status-item">
-          <span class="status-dot complete"></span>
-          <span id="complete-count">12</span> complete
-        </div>
+        <div class="status-item"><span class="status-dot active"></span><span id="active-count">3</span> active</div>
+        <div class="status-item"><span class="status-dot waiting"></span><span id="waiting-count">0</span> waiting</div>
+        <div class="status-item"><span class="status-dot complete"></span><span id="complete-count">12</span> complete</div>
         <div class="status-item no-cursor">NO SPINNING CURSOR</div>
       </div>
     </header>
     
     <section class="sidebar">
       <div class="weather-panel">
-        <div class="temp-display" id="temp">42°</div>
-        <div class="condition" id="condition">Partly Cloudy</div>
+        <div class="temp-display" id="temp">--°</div>
+        <div class="condition" id="condition">Loading...</div>
         <div class="location" id="location">Kitsap County, WA</div>
       </div>
-      
       <div class="quick-commands">
         <h3>QUICK COMMANDS</h3>
         <button class="cmd-btn" data-cmd="/status">📊 Status</button>
         <button class="cmd-btn" data-cmd="/fn">💰 Finance</button>
-        <button class="cmd-btn" data-cmd="/agents">🤖 Agents</button>
-        <button class="cmd-btn" data-cmd="/demos">📈 Demos</button>
-        <button class="cmd-btn" data-cmd="/gate">🚦 Quality Gate</button>
+        <button class="cmd-btn" data-cmd="/weather">🌤️ Weather</button>
+        <button class="cmd-btn" data-cmd="/maltego">🔌 Maltego</button>
+        <button class="cmd-btn" data-cmd="/resume">📋 Resume</button>
       </div>
     </section>
     
     <section class="main-display">
-      <div id="terminal-output" class="terminal-output">
-<span class="prompt">λ</span> <span class="cmd">welcome</span>
-<span class="output">PN Desktop v0.0.1 ready</span>
-<span class="output">Use menu or click commands on left</span>
-<span class="output">Telegram: same commands work there too</span>
-<span class="highlight">
-Type /help or use Demos menu to start
-</span>
-      </div>
+      <div id="terminal-output" class="terminal-output"><span class="prompt">λ</span> <span class="cmd">welcome</span>
+<span class="output">PN Desktop v0.0.4 ready</span>
+<span class="output">Type a slash command below or use menu/buttons</span>
+<span class="highlight">Try: /weather  /maltego  /resume  /help</span>
+</div>
     </section>
     
+    <div class="input-row">
+      <span class="input-prompt">λ</span>
+      <input type="text" id="command-input" placeholder="Type a command... (e.g. /weather)" autofocus>
+    </div>
+    
     <footer class="footer">
-      PN Desktop v0.0.1 | OpenClaw + Agent Flywheel |
-      <span class="no-cursor">"We don.t browse the web. We browse your organization.s capabilities."</span>
+      PN Desktop v0.0.4 | <span class="no-cursor">We dont browse the web. We browse your organizations capabilities.</span>
     </footer>
   </div>
   
   <script>
     const output = document.getElementById("terminal-output");
+    const input = document.getElementById("command-input");
     
-    function appendOutput(cmd, result) {
+    async function runCommand(cmd) {
       const line = document.createElement("div");
       line.innerHTML = `\n<span class="prompt">λ</span> <span class="cmd">${cmd}</span>\n`;
+      
+      const result = await window.pn.exec(cmd);
       
       if (result.type === "status") {
         line.innerHTML += `<span class="output">╔════════════════════════════╗
@@ -183,22 +186,48 @@ Type /help or use Demos menu to start
 ║ Cost potential: ${result.data.cost}
 ╚════════════════════════════╝</span>`;
       } else if (result.type === "weather") {
-        line.innerHTML += `<span class="success">🌤️ ${result.data.temp}°F (LIVE) - ${result.data.condition}</span>
-<span class="output">   ${result.data.location}</span>`;
+        line.innerHTML += `<span class="success">🌤️ ${result.data.temp}°F - ${result.data.condition}</span>
+<span class="output">   💧 Humidity: ${result.data.humidity}% | 💨 Wind: ${result.data.wind} mph</span>
+<span class="output">   📍 ${result.data.location}</span>`;
+        if (result.live) line.innerHTML += `<span class="highlight">   [LIVE DATA]</span>`;
+        document.getElementById("temp").textContent = result.data.temp + "°";
+        document.getElementById("condition").textContent = result.data.condition;
+      } else if (result.type === "maltego") {
+        const d = result.data;
+        line.innerHTML += `<span class="success">🔌 Maltego TRX: ${d.status}</span>
+<span class="output">   URL: ${d.url}</span>
+<span class="output">   Latency: ${d.latency || "N/A"}</span>`;
+        if (result.live) line.innerHTML += `<span class="highlight">   [LIVE]</span>`;
+      } else if (result.type === "sparql") {
+        const d = result.data;
+        line.innerHTML += `<span class="success">🔮 Virtuoso SPARQL: ${d.status}</span>
+<span class="output">   URL: ${d.url}</span>
+<span class="output">   Latency: ${d.latency || "N/A"}</span>`;
+      } else if (result.type === "resume") {
+        const d = result.data;
+        line.innerHTML += `<span class="success">📋 ${d.name}</span>
+<span class="output">   Current: ${d.current}</span>`;
+        d.previous.forEach(p => {
+          line.innerHTML += `\n<span class="output">   • ${p.company}: ${p.role} (${p.years})${p.note ? " - " + p.note : ""}</span>`;
+        });
+        line.innerHTML += `\n<span class="output">   Skills: ${d.skills.join(", ")}</span>`;
+        line.innerHTML += `\n<span class="highlight">   Source: ${d.source}</span>`;
+        if (result.note) line.innerHTML += `\n<span class="highlight">   ⚠️ ${result.note}</span>`;
       } else if (result.type === "agents") {
-        line.innerHTML += `<span class="success">🤖 Agent Swarm Status</span>
+        line.innerHTML += `<span class="success">🤖 Agent Swarm</span>
 <span class="output">   Active: ${result.data.active} | Waiting: ${result.data.waiting} | Complete: ${result.data.complete}</span>`;
       } else if (result.type === "gate") {
         line.innerHTML += `<span class="success">🚦 Quality Gate</span>
 <span class="output">   Pass: ${result.data.pass} | Warn: ${result.data.warn} | Fail: ${result.data.fail}</span>`;
       } else if (result.type === "demos") {
         line.innerHTML += `<span class="highlight">📈 Available Demos</span>
-<span class="output">   • /demos sql - SQL Audit walkthrough
-   • /demos costs - Cost-cutting review
-   • /demos onboard - New user onboarding</span>`;
+<span class="output">   ${result.data.available.map(d => "/demos " + d).join("  ")}</span>`;
       } else if (result.type === "dashboard") {
         line.innerHTML += `<span class="success">📊 ${result.aor.toUpperCase()} Dashboard</span>
 <span class="output">   ${JSON.stringify(result.data)}</span>`;
+      } else if (result.type === "help") {
+        line.innerHTML += `<span class="highlight">📚 Commands</span>
+<span class="output">   ${result.commands.join("  ")}</span>`;
       } else {
         line.innerHTML += `<span class="output">${JSON.stringify(result)}</span>`;
       }
@@ -207,19 +236,25 @@ Type /help or use Demos menu to start
       output.scrollTop = output.scrollHeight;
     }
     
+    // Handle input
+    input.addEventListener("keydown", async (e) => {
+      if (e.key === "Enter" && input.value.trim()) {
+        const cmd = input.value.trim();
+        input.value = "";
+        await runCommand(cmd);
+      }
+    });
+    
     // Handle quick command buttons
     document.querySelectorAll(".cmd-btn").forEach(btn => {
-      btn.addEventListener("click", () => {
-        const cmd = btn.dataset.cmd;
-        const result = window.pn.exec(cmd);
-        appendOutput(cmd, result);
-      });
+      btn.addEventListener("click", () => runCommand(btn.dataset.cmd));
     });
     
     // Handle commands from menu
-    window.addEventListener("pn-command", (e) => {
-      appendOutput(e.detail.command, e.detail.result);
-    });
+    window.addEventListener("pn-command", (e) => runCommand(e.detail.command));
+    
+    // Auto-load weather on start
+    setTimeout(() => runCommand("/weather"), 500);
   </script>
 </body>
 </html>
