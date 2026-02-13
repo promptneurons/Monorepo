@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>PN Desktop</title>
+  <link rel="stylesheet" href="../node_modules/@xterm/xterm/css/xterm.css">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -13,8 +14,8 @@
     }
     .container {
       display: grid;
-      grid-template-columns: 1fr 2fr;
-      grid-template-rows: auto 1fr auto auto;
+      grid-template-columns: 250px 1fr;
+      grid-template-rows: auto 1fr auto;
       gap: 16px;
       padding: 24px;
       height: 100vh;
@@ -50,72 +51,42 @@
       border-radius: 16px;
       border: 1px solid rgba(255,255,255,0.1);
       padding: 20px;
+      overflow-y: auto;
     }
     .weather-panel { text-align: center; margin-bottom: 24px; }
     .temp-display {
-      font-size: 72px;
+      font-size: 56px;
       font-weight: 200;
       background: linear-gradient(180deg, #fff 0%, #88ccff 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
-    .condition { font-size: 18px; color: #88ccff; }
-    .location { font-size: 12px; color: #666; margin-top: 8px; }
+    .condition { font-size: 16px; color: #88ccff; }
+    .location { font-size: 11px; color: #666; margin-top: 8px; }
     
     .quick-commands { margin-top: 24px; }
-    .quick-commands h3 { font-size: 12px; color: #666; margin-bottom: 12px; }
+    .quick-commands h3 { font-size: 11px; color: #666; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
     .cmd-btn {
-      display: block; width: 100%; padding: 10px 12px; margin-bottom: 8px;
+      display: block; width: 100%; padding: 8px 12px; margin-bottom: 6px;
       background: rgba(0,217,255,0.1); border: 1px solid rgba(0,217,255,0.3);
       border-radius: 8px; color: #00d9ff; text-align: left; cursor: pointer;
-      font-family: inherit; font-size: 13px;
+      font-family: inherit; font-size: 12px; transition: all 0.2s;
     }
-    .cmd-btn:hover { background: rgba(0,217,255,0.2); }
+    .cmd-btn:hover { background: rgba(0,217,255,0.2); transform: translateX(4px); }
     
-    .main-display {
-      background: rgba(0,0,0,0.3);
+    .terminal-container {
+      background: rgba(0,0,0,0.4);
       border-radius: 16px;
       border: 1px solid rgba(255,255,255,0.1);
-      padding: 20px;
-      font-size: 14px;
-      overflow: auto;
+      padding: 16px;
+      overflow: hidden;
     }
-    .terminal-output { white-space: pre-wrap; }
-    .prompt { color: #00ff88; }
-    .cmd { color: #00d9ff; }
-    .output { color: #aaa; }
-    .highlight { color: #ffaa00; }
-    .success { color: #00ff88; }
-    
-    .input-row {
-      grid-column: 1 / -1;
-      display: flex;
-      gap: 12px;
-      background: rgba(0,0,0,0.3);
-      border-radius: 12px;
-      padding: 12px 16px;
-      border: 1px solid rgba(255,255,255,0.1);
-    }
-    .input-prompt {
-      color: #00ff88;
-      font-size: 16px;
-      line-height: 32px;
-    }
-    #command-input {
-      flex: 1;
-      background: transparent;
-      border: none;
-      color: #00d9ff;
-      font-family: inherit;
-      font-size: 16px;
-      outline: none;
-    }
-    #command-input::placeholder { color: #444; }
+    #terminal { height: 100%; }
     
     .footer {
       grid-column: 1 / -1;
       text-align: center;
-      font-size: 12px;
+      font-size: 11px;
       color: #444;
       padding: 8px;
     }
@@ -140,121 +111,184 @@
         <div class="location" id="location">Kitsap County, WA</div>
       </div>
       <div class="quick-commands">
-        <h3>QUICK COMMANDS</h3>
-        <button class="cmd-btn" data-cmd="/status">📊 Status</button>
-        <button class="cmd-btn" data-cmd="/fn">💰 Finance</button>
-        <button class="cmd-btn" data-cmd="/weather">🌤️ Weather</button>
-        <button class="cmd-btn" data-cmd="/maltego">🔌 Maltego</button>
-        <button class="cmd-btn" data-cmd="/resume">📋 Resume</button>
+        <h3>Quick Commands</h3>
+        <button class="cmd-btn" data-cmd="/help">📚 /help</button>
+        <button class="cmd-btn" data-cmd="/status">📊 /status</button>
+        <button class="cmd-btn" data-cmd="/weather">🌤️ /weather</button>
+        <button class="cmd-btn" data-cmd="/maltego">🔌 /maltego</button>
+        <button class="cmd-btn" data-cmd="/resume">📋 /resume</button>
+        <button class="cmd-btn" data-cmd="/fn">💰 /fn</button>
+        <button class="cmd-btn" data-cmd="/agents">🤖 /agents</button>
+        <button class="cmd-btn" data-cmd="/gate">🚦 /gate</button>
       </div>
     </section>
     
-    <section class="main-display">
-      <div id="terminal-output" class="terminal-output"><span class="prompt">λ</span> <span class="cmd">welcome</span>
-<span class="output">PN Desktop v0.0.4 ready</span>
-<span class="output">Type a slash command below or use menu/buttons</span>
-<span class="highlight">Try: /weather  /maltego  /resume  /help</span>
-</div>
+    <section class="terminal-container">
+      <div id="terminal"></div>
     </section>
     
-    <div class="input-row">
-      <span class="input-prompt">λ</span>
-      <input type="text" id="command-input" placeholder="Type a command... (e.g. /weather)" autofocus>
-    </div>
-    
     <footer class="footer">
-      PN Desktop v0.0.4 | <span class="no-cursor">We dont browse the web. We browse your organizations capabilities.</span>
+      PN Desktop v0.0.5 | xterm.js (RED) | <span class="no-cursor">We dont browse the web. We browse your organizations capabilities.</span>
     </footer>
   </div>
   
-  <script>
-    const output = document.getElementById("terminal-output");
-    const input = document.getElementById("command-input");
+  <script type="module">
+    import { Terminal } from "../node_modules/@xterm/xterm/lib/xterm.mjs";
+    import { FitAddon } from "../node_modules/@xterm/addon-fit/lib/addon-fit.mjs";
     
-    async function runCommand(cmd) {
-      const line = document.createElement("div");
-      line.innerHTML = `\n<span class="prompt">λ</span> <span class="cmd">${cmd}</span>\n`;
+    const term = new Terminal({
+      theme: {
+        background: "transparent",
+        foreground: "#e8e8e8",
+        cursor: "#00ff88",
+        cursorAccent: "#1a1a2e",
+        selectionBackground: "#00d9ff44"
+      },
+      fontFamily: "\"SF Mono\", \"Fira Code\", monospace",
+      fontSize: 14,
+      cursorBlink: true,
+      cursorStyle: "bar"
+    });
+    
+    const fitAddon = new FitAddon();
+    term.loadAddon(fitAddon);
+    term.open(document.getElementById("terminal"));
+    fitAddon.fit();
+    
+    window.addEventListener("resize", () => fitAddon.fit());
+    
+    let currentLine = "";
+    const PROMPT = "\x1b[32mλ\x1b[0m ";
+    
+    function writePrompt() {
+      term.write("\r\n" + PROMPT);
+    }
+    
+    function writeLine(text, color = "white") {
+      const colors = {
+        green: "\x1b[32m",
+        cyan: "\x1b[36m",
+        yellow: "\x1b[33m",
+        white: "\x1b[37m",
+        gray: "\x1b[90m",
+        reset: "\x1b[0m"
+      };
+      term.write(colors[color] + text + colors.reset + "\r\n");
+    }
+    
+    async function executeCommand(cmd) {
+      term.write("\r\n");
+      
+      if (!cmd.startsWith("/")) {
+        writeLine("Commands start with / (try /help)", "yellow");
+        writePrompt();
+        return;
+      }
       
       const result = await window.pn.exec(cmd);
       
-      if (result.type === "status") {
-        line.innerHTML += `<span class="output">╔════════════════════════════╗
-║      MARKOV BLANKET        ║
-╠════════════════════════════╣
-║ Resources: ${result.data.resources}
-║ Quality: ${result.data.quality}
-║ Cost potential: ${result.data.cost}
-╚════════════════════════════╝</span>`;
-      } else if (result.type === "weather") {
-        line.innerHTML += `<span class="success">🌤️ ${result.data.temp}°F - ${result.data.condition}</span>
-<span class="output">   💧 Humidity: ${result.data.humidity}% | 💨 Wind: ${result.data.wind} mph</span>
-<span class="output">   📍 ${result.data.location}</span>`;
-        if (result.live) line.innerHTML += `<span class="highlight">   [LIVE DATA]</span>`;
-        document.getElementById("temp").textContent = result.data.temp + "°";
-        document.getElementById("condition").textContent = result.data.condition;
+      if (result.type === "weather") {
+        const d = result.data;
+        writeLine(`🌤️  ${d.temp}°F - ${d.condition}`, "cyan");
+        writeLine(`   💧 Humidity: ${d.humidity}% | 💨 Wind: ${d.wind} mph`, "gray");
+        writeLine(`   📍 ${d.location}`, "gray");
+        if (result.live) writeLine("   [LIVE DATA]", "yellow");
+        document.getElementById("temp").textContent = d.temp + "°";
+        document.getElementById("condition").textContent = d.condition;
+      } else if (result.type === "status") {
+        writeLine("╔════════════════════════════╗", "cyan");
+        writeLine("║      MARKOV BLANKET        ║", "cyan");
+        writeLine("╠════════════════════════════╣", "cyan");
+        writeLine(`║ Resources: ${result.data.resources.padEnd(14)}║`, "white");
+        writeLine(`║ Quality: ${result.data.quality.padEnd(16)}║`, "white");
+        writeLine(`║ Cost: ${result.data.cost.padEnd(19)}║`, "white");
+        writeLine("╚════════════════════════════╝", "cyan");
       } else if (result.type === "maltego") {
         const d = result.data;
-        line.innerHTML += `<span class="success">🔌 Maltego TRX: ${d.status}</span>
-<span class="output">   URL: ${d.url}</span>
-<span class="output">   Latency: ${d.latency || "N/A"}</span>`;
-        if (result.live) line.innerHTML += `<span class="highlight">   [LIVE]</span>`;
-      } else if (result.type === "sparql") {
-        const d = result.data;
-        line.innerHTML += `<span class="success">🔮 Virtuoso SPARQL: ${d.status}</span>
-<span class="output">   URL: ${d.url}</span>
-<span class="output">   Latency: ${d.latency || "N/A"}</span>`;
+        writeLine(`🔌 Maltego TRX: ${d.status}`, d.status === "online" ? "green" : "yellow");
+        writeLine(`   URL: ${d.url}`, "gray");
+        writeLine(`   Latency: ${d.latency || "N/A"}`, "gray");
       } else if (result.type === "resume") {
         const d = result.data;
-        line.innerHTML += `<span class="success">📋 ${d.name}</span>
-<span class="output">   Current: ${d.current}</span>`;
+        writeLine(`📋 ${d.name}`, "cyan");
+        writeLine(`   Current: ${d.current}`, "white");
         d.previous.forEach(p => {
-          line.innerHTML += `\n<span class="output">   • ${p.company}: ${p.role} (${p.years})${p.note ? " - " + p.note : ""}</span>`;
+          writeLine(`   • ${p.company}: ${p.role} (${p.years})`, "gray");
         });
-        line.innerHTML += `\n<span class="output">   Skills: ${d.skills.join(", ")}</span>`;
-        line.innerHTML += `\n<span class="highlight">   Source: ${d.source}</span>`;
-        if (result.note) line.innerHTML += `\n<span class="highlight">   ⚠️ ${result.note}</span>`;
+        writeLine(`   Skills: ${d.skills.join(", ")}`, "gray");
+        writeLine(`   Source: ${d.source}`, "yellow");
+        if (result.note) writeLine(`   ⚠️  ${result.note}`, "yellow");
       } else if (result.type === "agents") {
-        line.innerHTML += `<span class="success">🤖 Agent Swarm</span>
-<span class="output">   Active: ${result.data.active} | Waiting: ${result.data.waiting} | Complete: ${result.data.complete}</span>`;
+        writeLine("🤖 Agent Swarm", "cyan");
+        writeLine(`   Active: ${result.data.active} | Waiting: ${result.data.waiting} | Complete: ${result.data.complete}`, "white");
       } else if (result.type === "gate") {
-        line.innerHTML += `<span class="success">🚦 Quality Gate</span>
-<span class="output">   Pass: ${result.data.pass} | Warn: ${result.data.warn} | Fail: ${result.data.fail}</span>`;
-      } else if (result.type === "demos") {
-        line.innerHTML += `<span class="highlight">📈 Available Demos</span>
-<span class="output">   ${result.data.available.map(d => "/demos " + d).join("  ")}</span>`;
-      } else if (result.type === "dashboard") {
-        line.innerHTML += `<span class="success">📊 ${result.aor.toUpperCase()} Dashboard</span>
-<span class="output">   ${JSON.stringify(result.data)}</span>`;
+        writeLine("🚦 Quality Gate", "cyan");
+        writeLine(`   Pass: ${result.data.pass} | Warn: ${result.data.warn} | Fail: ${result.data.fail}`, "white");
       } else if (result.type === "help") {
-        line.innerHTML += `<span class="highlight">📚 Commands</span>
-<span class="output">   ${result.commands.join("  ")}</span>`;
+        writeLine("📚 Available Commands", "cyan");
+        writeLine(`   ${result.commands.join("  ")}`, "white");
+      } else if (result.type === "dashboard") {
+        writeLine(`📊 ${result.aor.toUpperCase()} Dashboard`, "cyan");
+        writeLine(`   ${JSON.stringify(result.data)}`, "gray");
+      } else if (result.type === "demos") {
+        writeLine("📈 Available Demos", "cyan");
+        result.data.available.forEach(d => writeLine(`   /demos ${d}`, "white"));
       } else {
-        line.innerHTML += `<span class="output">${JSON.stringify(result)}</span>`;
+        writeLine(JSON.stringify(result, null, 2), "gray");
       }
       
-      output.appendChild(line);
-      output.scrollTop = output.scrollHeight;
+      writePrompt();
     }
     
-    // Handle input
-    input.addEventListener("keydown", async (e) => {
-      if (e.key === "Enter" && input.value.trim()) {
-        const cmd = input.value.trim();
-        input.value = "";
-        await runCommand(cmd);
+    // Handle keyboard input
+    term.onKey(({ key, domEvent }) => {
+      const code = domEvent.keyCode;
+      
+      if (code === 13) { // Enter
+        const cmd = currentLine.trim();
+        currentLine = "";
+        if (cmd) executeCommand(cmd);
+        else writePrompt();
+      } else if (code === 8) { // Backspace
+        if (currentLine.length > 0) {
+          currentLine = currentLine.slice(0, -1);
+          term.write("\b \b");
+        }
+      } else if (key.length === 1 && code !== 9) { // Regular char
+        currentLine += key;
+        term.write(key);
       }
     });
     
-    // Handle quick command buttons
+    // Handle sidebar button clicks
     document.querySelectorAll(".cmd-btn").forEach(btn => {
-      btn.addEventListener("click", () => runCommand(btn.dataset.cmd));
+      btn.addEventListener("click", () => {
+        const cmd = btn.dataset.cmd;
+        term.write(cmd);
+        currentLine = cmd;
+        executeCommand(cmd);
+      });
     });
     
-    // Handle commands from menu
-    window.addEventListener("pn-command", (e) => runCommand(e.detail.command));
+    // Handle menu commands
+    window.addEventListener("pn-command", (e) => {
+      term.write(e.detail.command);
+      currentLine = e.detail.command;
+      executeCommand(e.detail.command);
+    });
     
-    // Auto-load weather on start
-    setTimeout(() => runCommand("/weather"), 500);
+    // Startup
+    writeLine("", "white");
+    writeLine("╔═══════════════════════════════════════════════════════╗", "cyan");
+    writeLine("║  PN Desktop v0.0.5 - Organizational Capability Browser ║", "cyan");
+    writeLine("║  Terminal: xterm.js (RED)                              ║", "cyan");
+    writeLine("╚═══════════════════════════════════════════════════════╝", "cyan");
+    writeLine("", "white");
+    writeLine("Type /help for commands, or click buttons on the left.", "gray");
+    writePrompt();
+    
+    // Auto-fetch weather
+    setTimeout(() => executeCommand("/weather"), 1000);
   </script>
 </body>
 </html>
