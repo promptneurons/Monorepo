@@ -183,7 +183,7 @@ Type /help or use Demos menu to start
 ║ Cost potential: ${result.data.cost}
 ╚════════════════════════════╝</span>`;
       } else if (result.type === "weather") {
-        line.innerHTML += `<span class="success">🌤️ ${result.data.temp}°F - ${result.data.condition}</span>
+        line.innerHTML += `<span class="success">🌤️ ${result.data.temp}°F (LIVE) - ${result.data.condition}</span>
 <span class="output">   ${result.data.location}</span>`;
       } else if (result.type === "agents") {
         line.innerHTML += `<span class="success">🤖 Agent Swarm Status</span>
