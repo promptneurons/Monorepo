@@ -1,6 +1,9 @@
 const { app, Menu, shell } = require("electron");
 const { helpLinks, VIRTUOSO_BASE } = require("./help");
 
+const GITHUB_ORG = "https://github.com/promptneurons";
+const BLOG_CLAUDIUS = "https://kitsaplabs.com/blog/author/claudius/";
+
 function createMenu(mainWindow) {
   const isMac = process.platform === "darwin";
   
@@ -57,6 +60,24 @@ function createMenu(mainWindow) {
       ]
     },
     
+    // Browse Menu (Capabilities Browser)
+    {
+      label: "Browse",
+      submenu: [
+        { label: "📂 Docs (Virtuoso)", click: () => shell.openExternal(VIRTUOSO_BASE) },
+        { type: "separator" },
+        { label: "🐙 GitHub", submenu: [
+          { label: "Organization", click: () => shell.openExternal(GITHUB_ORG) },
+          { label: "Monorepo", click: () => shell.openExternal(`${GITHUB_ORG}/Monorepo`) },
+          { label: "clawd", click: () => shell.openExternal(`${GITHUB_ORG}/clawd`) },
+          { label: "control-plane", click: () => shell.openExternal(`${GITHUB_ORG}/control-plane`) }
+        ]},
+        { type: "separator" },
+        { label: "🦋 Claudius Blog", click: () => shell.openExternal(BLOG_CLAUDIUS) },
+        { label: "📰 Kitsap Labs", click: () => shell.openExternal("https://kitsaplabs.com/blog") }
+      ]
+    },
+    
     // Help Menu
     {
       label: "Help",
@@ -77,7 +98,6 @@ function createMenu(mainWindow) {
           { label: "AM Archive Flow", click: () => shell.openExternal(helpLinks["TTP-AM-ARCHIVE"]) }
         ]},
         { type: "separator" },
-        { label: "📂 Browse All Docs", click: () => shell.openExternal(VIRTUOSO_BASE) },
         { label: "📡 RSS Feed", click: () => shell.openExternal(helpLinks["rss"]) },
         { type: "separator" },
         { label: "🌐 OpenClaw Docs", click: () => shell.openExternal("https://docs.openclaw.ai") },
